@@ -123,9 +123,10 @@
                   }}</code>
                   <p class="mt-2">
                     The genotype above is described in
-                    <a href="https://gnomic.readthedocs.io">gnomic</a> syntax, a
-                    grammar to represent genotypes and phenotypes developed at
-                    DTU Biosustain.
+                    <a-extended href="https://gnomic.readthedocs.io"
+                      >gnomic</a-extended
+                    >syntax, a grammar to represent genotypes and phenotypes
+                    developed at DTU Biosustain.
                   </p>
                 </v-card-text>
                 <v-card-text v-else>
@@ -240,12 +241,12 @@
                 >
                   <template v-slot:items="{ item: protein }">
                     <td>
-                      <a
+                      <a-extended
                         :href="
                           `https://www.uniprot.org/uniprot/${protein.identifier}`
                         "
                         target="_blank"
-                        >{{ protein.identifier }}</a
+                        >{{ protein.identifier }}</a-extended
                       >
                     </td>
                     <td>{{ protein.name }}</td>

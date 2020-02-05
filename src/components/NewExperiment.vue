@@ -278,7 +278,7 @@
                         </td>
                         <td>
                           <AutocompleteMnxReaction
-                            hint="Searches the entire <a href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a> database for known reactions."
+                            hint="Searches the entire <a-extended href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a-extended> database for known reactions."
                             @change="
                               onChange(fluxomicsItem, 'reaction', $event)
                             "
@@ -389,7 +389,7 @@
                         </td>
                         <td>
                           <AutocompleteMnxMetabolite
-                            hint="Searches the entire <a href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a> database for known metabolites."
+                            hint="Searches the entire <a-extended href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a-extended> database for known metabolites."
                             @change="
                               onChange(metabolomicsItem, 'compound', $event)
                             "
@@ -636,7 +636,7 @@
                         </td>
                         <td>
                           <AutocompleteMnxMetabolite
-                            hint="Searches the entire <a href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a> database for known metabolites."
+                            hint="Searches the entire <a-extended href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a-extended> database for known metabolites."
                             @change="
                               onChange(uptakeSecretionItem, 'compound', $event)
                             "
@@ -766,7 +766,7 @@
                         </td>
                         <td>
                           <AutocompleteMnxMetabolite
-                            hint="Searches the entire <a href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a> database for known metabolites."
+                            hint="Searches the entire <a-extended href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a-extended> database for known metabolites."
                             @change="
                               onChange(molarYieldsItem, 'product', $event)
                             "
@@ -795,7 +795,7 @@
                         </td>
                         <td>
                           <AutocompleteMnxMetabolite
-                            hint="Searches the entire <a href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a> database for known metabolites."
+                            hint="Searches the entire <a-extended href='https://www.metanetx.org/mnxdoc/mnxref.html'>MetaNetX</a-extended> database for known metabolites."
                             @change="
                               onChange(molarYieldsItem, 'substrate', $event)
                             "
