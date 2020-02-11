@@ -44,6 +44,7 @@
           </v-data-table>
           <!-- Cross-Feeding -->
           <h2>Cross-Feeding</h2>
+          <div ref="chartdiv" class="chart-style"></div>
           <v-data-table
             :headers="headersCrossFeeding"
             :items="communityData.cross_feeding"
@@ -154,18 +155,28 @@ import axios from "axios";
 import * as settings from "@/utils/settings";
 import { mapGetters } from "vuex";
 import { partitionedList } from "@/utils/utility";
+import * as am4core from "@amcharts/amcharts4/core";
+import * as am4charts from "@amcharts/amcharts4/charts";
+import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+
+am4core.useTheme(am4themes_animated);
 
 export default Vue.extend({
   name: "CommunityModeling",
   components: {},
   data: () => ({
+    chart: null,
     isUpdating: false,
     selectedModels: [],
     selectedMedium: null,
     selectedMethod: null,
     isSidepanelOpen: true,
     hasSimulationError: false,
-    communityData: null,
+    communityData: {
+      growth_rate: null,
+      cross_feeding: [],
+      abundance: []
+    },
     headersAbundance: [
       { text: "Organism", value: "id" },
       { text: "Model", value: "id" },
@@ -284,7 +295,111 @@ export default Vue.extend({
     this.selectedMedium = this.media[0];
     this.selectedMethod = this.methods[0];
   },
+  mounted() {
+    this.renderCrossfeeding();
+  },
+  beforeDestroy() {
+    this.disposeChart();
+  },
   methods: {
+    disposeChart() {
+      if (this.chart) {
+        this.chart.dispose();
+      }
+    },
+    cleanData(cross_feeding) {
+      if (cross_feeding.length > 0) {
+        let output = cross_feeding.map(obj => ({
+          ...obj,
+          to: this.getModelByID(obj.to).name,
+          from: this.getModelByID(obj.from).name
+        }));
+        return output;
+      } else {
+        return [];
+      }
+    },
+    renderCrossfeeding() {
+      this.disposeChart();
+      const chart = am4core.create(this.$refs.chartdiv, am4charts.ChordDiagram);
+
+      chart.data = this.cleanData(this.communityData.cross_feeding);
+
+      chart.dataFields.fromName = "from";
+      chart.dataFields.toName = "to";
+      chart.dataFields.value = "value";
+      chart.sortBy = "value";
+      chart.responsive.enabled = true;
+
+      const slice = chart.nodes.template.slice;
+      slice.stroke = am4core.color("#000");
+      slice.strokeOpacity = 0.8;
+      slice.strokeWidth = 1;
+      slice.cornerRadius = 8;
+      slice.innerCornerRadius = 8;
+
+      var nodeTemplate = chart.nodes.template;
+      nodeTemplate.readerTitle = "Click to show/hide or drag to rearrange";
+      nodeTemplate.tooltipText = "{name}'s total exchanges: {total}";
+      nodeTemplate.propertyFields.fill = "color";
+
+      // Hovering over a Node highlights all connections that emmanate from that node.
+      nodeTemplate.events.on("over", event => {
+        var node = event.target;
+        node.outgoingDataItems.each(dataItem => {
+          if (dataItem.toNode) {
+            dataItem.link.isHover = true;
+            dataItem.toNode.isHover = true;
+          }
+        });
+        node.incomingDataItems.each(dataItem => {
+          if (dataItem.fromNode) {
+            dataItem.link.isHover = true;
+            dataItem.fromNode.label.isHover = true;
+          }
+        });
+
+        node.label.isHover = true;
+      });
+
+      // Moving off a Node removes the highlights.
+      nodeTemplate.events.on("out", event => {
+        var node = event.target;
+        node.outgoingDataItems.each(dataItem => {
+          if (dataItem.toNode) {
+            dataItem.link.isHover = false;
+            dataItem.toNode.isHover = false;
+          }
+        });
+        node.incomingDataItems.each(dataItem => {
+          if (dataItem.fromNode) {
+            dataItem.link.isHover = false;
+            dataItem.fromNode.label.isHover = false;
+          }
+        });
+
+        node.label.isHover = false;
+      });
+
+      var label = nodeTemplate.label;
+      label.relativeRotation = 90;
+      label.fillOpacity = 0.5;
+      var labelHS = label.states.create("hover");
+      labelHS.properties.fillOpacity = 1;
+
+      // link template
+      var linkTemplate = chart.links.template;
+      linkTemplate.strokeOpacity = 0;
+      linkTemplate.fillOpacity = 0.2;
+      linkTemplate.tooltipText =
+        "{fromName} provides {value.value} mmol/l {metabolite} to {toName}";
+
+      var hoverState = linkTemplate.states.create("hover");
+      hoverState.properties.fillOpacity = 0.7;
+      hoverState.properties.strokeOpacity = 0.7;
+
+      this.chart = chart;
+    },
     simulateCommunity() {
       this.isUpdating = true;
       const payload = {
@@ -296,6 +411,7 @@ export default Vue.extend({
         .post(`${settings.apis.simulations}/community/simulate`, payload)
         .then(response => {
           this.communityData = response.data;
+          this.renderCrossfeeding();
           this.isUpdating = false;
         })
         .catch(error => {
@@ -315,6 +431,10 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.chart-style {
+  width: 100%;
+  height: 600px;
+}
 .sidepanel-toggle {
   position: absolute;
 }

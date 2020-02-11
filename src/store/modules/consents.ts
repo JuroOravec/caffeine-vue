@@ -167,8 +167,9 @@ export default vuexStoreModule({
         message:
           "These cookies allow to remember choices you have made such as " +
           "what your user name and password are so you can automatically " +
-          "log in.<br/><br/>Note: Preferences cookies are necessary to " +
-          "remember which cookies you agreed to.",
+          "log in.<br/><br/><small class='warning py-1 px-1 font-weight-bold'" +
+          ">Note: Preferences cookies are necessary to hide cookies " +
+          "notification and remember login.</small>",
         default: false,
         canOptOut: true
       },
@@ -227,6 +228,29 @@ export default vuexStoreModule({
     }
   },
   actions: {
+    clearLocalStorageOnExit({ getters, state }) {
+      /**
+       * Take care of clearing cookies based on "preferences" cookie consent
+       * status.
+       *
+       * If user rejects "preferences" cookie or the consents are cleared
+       * (e.g. on log out), then preferences are removed from localStorage.
+       */
+      window.addEventListener("beforeunload", () => {
+        if (!state.enableConsents) {
+          return;
+        }
+        const consentGiven = getters.isConsentAccepted({
+          type: "cookie",
+          category: "preferences"
+        });
+        if (!consentGiven) {
+          ["jwt", "cookie:accepted", "consents"].forEach(k =>
+            localStorage.removeItem(k)
+          );
+        }
+      });
+    },
     fetchConsents({ commit, rootState, state }) {
       if (!state.enableConsents) {
         return;
