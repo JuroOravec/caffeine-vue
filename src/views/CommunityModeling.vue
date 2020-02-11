@@ -51,9 +51,9 @@
             class="elevation-1 pa-2 my-3"
           >
             <template v-slot:items="props">
-              <td>{{ getModelByID(props.item.from).name }}</td>
-              <td>{{ getModelByID(props.item.to).name }}</td>
-              <td>{{ props.item.metabolite }}</td>
+              <td>{{ translateModelIDs(props.item.from) }}</td>
+              <td>{{ translateModelIDs(props.item.to) }}</td>
+              <td>{{ props.item.metabolite_name }}</td>
               <td>{{ props.item.value }}</td>
             </template>
             <template v-slot:no-data>
@@ -185,7 +185,7 @@ export default Vue.extend({
     headersCrossFeeding: [
       { text: "From", value: "from" },
       { text: "To", value: "to" },
-      { text: "Metabolite", value: "metabolite" },
+      { text: "Metabolite", value: "metabolite_name" },
       { text: "Value", value: "value" }
     ],
     media: [
@@ -307,12 +307,21 @@ export default Vue.extend({
         this.chart.dispose();
       }
     },
+    translateModelIDs(id){
+      // Translates numeric model warehouse IDs in cross_feedling response to 
+      // Model name but leaves 'medium' untouched.
+      if (id !== 'medium') {
+      return this.getModelByID(id).name;
+      } else {
+      return 'Medium';
+      }
+    },
     cleanData(cross_feeding) {
       if (cross_feeding.length > 0) {
         let output = cross_feeding.map(obj => ({
           ...obj,
-          to: this.getModelByID(obj.to).name,
-          from: this.getModelByID(obj.from).name
+          to: this.translateModelIDs(obj.to),
+          from: this.translateModelIDs(obj.from)
         }));
         return output;
       } else {
@@ -392,7 +401,7 @@ export default Vue.extend({
       linkTemplate.strokeOpacity = 0;
       linkTemplate.fillOpacity = 0.2;
       linkTemplate.tooltipText =
-        "{fromName} provides {value.value} mmol/l {metabolite} to {toName}";
+        "{fromName} provides {value.value} mmol/l {metabolite_name} to {toName}";
 
       var hoverState = linkTemplate.states.create("hover");
       hoverState.properties.fillOpacity = 0.7;
